@@ -13,10 +13,6 @@ DeviceAddress s0, s1, s2, s3;
 
 #include "setenv.h"
 
-const uint8_t pinBMEminus = 3; //  питание датчика -
-const uint8_t pinBMEplus = 19; //  питание датчика +
-const uint8_t pinVcc = 4;      //  напряжение батареи
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -47,7 +43,6 @@ RTC_DATA_ATTR struct
   float t2 = 0;           //  температура 2
   float t3 = 0;           //  температура 3
   float t4 = 0;           //  температура 4
-  uint8_t countSleep = 0; //  счетчик предельного кол-ва циклов сна
 } data;
 
 RTC_DATA_ATTR bool flagNotWork = false;
@@ -69,17 +64,6 @@ inline bool mqtt_publish(PubSubClient &client, const String &topic, const String
   return client.publish(topic.c_str(), value.c_str());
 }
 
-//-----------------------------------
-void printAddress(DeviceAddress deviceAddress)
-{
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    // zero pad the address if necessary
-    if (deviceAddress[i] < 16)
-      Serial.print("0");
-    Serial.print(deviceAddress[i], HEX);
-  }
-}
 
 //-----------------------------------
 void mqttDataOut(float temp1, float temp2, float temp3, float temp4)
@@ -193,6 +177,18 @@ uint16_t medianRoom(uint16_t newValRoom)
 }
 
 //-----------------------------------
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    // zero pad the address if necessary
+    if (deviceAddress[i] < 16)
+      Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+  }
+}
+
+//-----------------------------------
 void requestSensors()
 {
   oneWire.reset_search();
@@ -244,11 +240,6 @@ void readData()
 void setup()
 {
   Serial.begin(115200);
-  pinMode(pinBMEplus, OUTPUT);
-  digitalWrite(pinBMEplus, HIGH);
-  pinMode(pinBMEminus, OUTPUT);
-  digitalWrite(pinBMEminus, LOW);
-  delay(20);
 
   requestSensors();
   readData();
